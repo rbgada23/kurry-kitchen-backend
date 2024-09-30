@@ -1,44 +1,73 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
-//Has some good validator functions
-const validator = require('validator');
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      minLength: 4,
+      maxLength: 50,
+    },
+    lastName: {
+      type: String,
+    },
+    emailId: {
+      type: String,
+      lowercase: true,
+      required: true,
+      unique: true,
+      trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email address: " + value);
+        }
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("Enter a Strong Password: " + value);
+        }
+      },
+    },
+    userType: {
+      type: String,
+      enum: {
+        values: ["kitchen", "customer", "other"],
+        message: `{VALUE} is not a valid user type`,
+      },
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const userSchema = mongoose.Schema({
-    firstName : {
-        type : String,
-        //Mongoose will not allow to insert a document
-        required : true,
-    },
-    lastName : {
-        type : String,
-        lowercase : true,
-        trim : true
-    },
-    emailId : {
-        type : String,
-        unique : true,
-        validate(value){
-            if(!validator.isEmail(value)){
-                throw new Error("email not valid : "+value);
-            }
-        },
-    },
-    password : {
-        type : String
-    },
-    zipCode : {
-        type : Number
-    },userType :{
-        type : Number
-    },
-    photoUrl : {
-        type : String,
-        default : "This is default photoUrl"
-    },
- },{
-    timestamps : true
- });
+userSchema.methods.getJWT = async function () {
+  const user = this;
 
-const User = mongoose.model("User",userSchema);
+  const token = await jwt.sign({ _id: user._id }, "Kurry@ABD$17", {
+    expiresIn: "7d",
+  });
 
-module.exports = User;
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
+  const passwordHash = user.password;
+
+  const isPasswordValid = await bcrypt.compare(
+    passwordInputByUser,
+    passwordHash
+  );
+
+  return isPasswordValid;
+};
+
+module.exports = mongoose.model("User", userSchema);
