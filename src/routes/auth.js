@@ -4,6 +4,7 @@ const authRouter = express.Router();
 const { validateSignUpData } = require("../utils/validation");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const { userAuth } = require("../middlewares/auth");
 
 authRouter.post("/signup", async (req, res) => {
   try {
@@ -68,6 +69,21 @@ authRouter.post("/logout", async (req, res) => {
     expires: new Date(Date.now()),
   });
   res.send("Logout Successful!!");
+});
+
+// Get all the kitchen menu
+authRouter.get("/userProfile", userAuth, async (req, res) => {
+  try {
+    const  emailId  = req.query.emailId;
+    const userProfile = await User.findOne({ emailId: emailId });
+
+    res.json({
+      message: "Data fetched successfully",
+      data: userProfile,
+    });
+  } catch (err) {
+    req.statusCode(400).send("ERROR: " + err.message);
+  }
 });
 
 module.exports = authRouter;
