@@ -6,10 +6,15 @@ const { validateSignUpData } = require("../src/utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const cors = require('cors');
 
 //Lets the request convert the object it gets in body into json.
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend URL
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+}));
 
 const authRouter = require("./routes/auth");
 const kitchenRouter = require("./routes/kitchen")
