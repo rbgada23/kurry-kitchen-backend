@@ -4,12 +4,53 @@ const KitchenDailyMenu = require("../models/kitchenDailyMenu");
 
 const kitchenRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
+const Kitchen = require("../models/kitchen");
+
+//Post Kitchen
+kitchenRouter.post("/kitchen", userAuth, async (req, res) => {
+  try {
+    //ToDo : Add validations
+
+    const {name,address,contactNumber,operatingHours,user} = req.body;
+
+    const kitchen = new Kitchen({
+      name,
+      address,
+      contactNumber,
+      operatingHours,
+      user
+    });
+    
+    const data = await kitchen.save();
+
+    res.json({
+      message: "Kitchen Details Added",
+      data,
+    });
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
+kitchenRouter.get("/kitchen", userAuth, async (req, res) => {
+  try {
+    const userId  = req.query.userId;
+    const kitchenObj = await Kitchen.findOne({ user: userId })
+
+    res.json({
+      message: "Data fetched successfully",
+      data: kitchenObj,
+    });
+  } catch (err) {
+    req.statusCode(400).send("ERROR: " + err.message);
+  }
+});
 
 // Get all the kitchen menu
 kitchenRouter.get("/kitchen/kitchenMenu", userAuth, async (req, res) => {
   try {
-    const kitchenMenu = await KitchenMenu.find({});
-
+    const kitchen  = req.query.kitchen; //kitchen id
+    const kitchenMenu = await KitchenMenu.find({ kitchen: kitchen })
     res.json({
       message: "Data fetched successfully",
       data: kitchenMenu,
@@ -24,13 +65,13 @@ kitchenRouter.post("/kitchen/kitchenMenu", userAuth, async (req, res) => {
   try {
     //ToDo : Add validations
 
-    const { menuName, menuDescription, menuType, price, imageUrl } = req.body;
+    const { name, type, items, price ,kitchen} = req.body;
     const kitchenMenu = new KitchenMenu({
-      menuName,
-      menuDescription,
-      menuType,
+      name,
+      type,
+      items,
       price,
-      imageUrl,
+      kitchen
     });
 
     const data = await kitchenMenu.save();

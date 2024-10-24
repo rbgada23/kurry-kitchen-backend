@@ -1,33 +1,24 @@
 const mongoose = require("mongoose");
-const validator = require("validator");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const Schema = mongoose.Schema;
 // menu_id, menu_name, menu_description , menu_size, price ,imageURL , createdBy , updatedBy
 
 const kitchenMenuSchema = new mongoose.Schema(
   {
-    menuName: {
+    name: {
       type: String,
       required: true,
       maxLength: 50,
-      unique: true,
     },
-    menuType: {
+    type: {
       type: String,
-      enum: {
-        values: ["veg", "nonveg", "jain", "vegan"],
-        message: `{VALUE} is not a valid menu type type`,
-      },
     },
-    menuDescription: {
+    items: {
       type: String,
     },
     price: {
       type: Number,
     },
-    imageUrl: {
-      type: String,
-    },
+    kitchen : {type: Schema.Types.ObjectId, ref: 'Kitchen'},
   },
   {
     timestamps: true,
