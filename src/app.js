@@ -1,11 +1,7 @@
 const express = require("express");
 const connectDB = require("../src/config/database");
-const User = require("./models/user");
 const app = express();
-const { validateSignUpData } = require("../src/utils/validation");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 const cors = require('cors');
 
 //Lets the request convert the object it gets in body into json.
@@ -18,8 +14,11 @@ app.use(cors({
 
 const authRouter = require("./routes/auth");
 const kitchenRouter = require("./routes/kitchen")
+const orderRouter = require("./routes/order")
 app.use("/", authRouter);
 app.use("/", kitchenRouter);
+app.use("/", orderRouter);
+
 
 
 connectDB()
