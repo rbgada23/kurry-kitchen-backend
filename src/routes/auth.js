@@ -11,7 +11,7 @@ authRouter.post("/signup", async (req, res) => {
     // Validation of data
     validateSignUpData(req);
 
-    const { firstName, lastName, emailId, password ,userType } = req.body;
+    const { firstName, lastName, emailId, password, userType } = req.body;
 
     // Encrypt the password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -35,7 +35,7 @@ authRouter.post("/signup", async (req, res) => {
 
     res.json({ message: "User Added successfully!", data: savedUser });
   } catch (err) {
-    res.status(400).send("ERROR : " + err.message);
+    res.status(400).send(err.message);
   }
 });
 
@@ -60,7 +60,7 @@ authRouter.post("/login", async (req, res) => {
       throw new Error("Invalid credentials");
     }
   } catch (err) {
-    res.status(400).send("ERROR : " + err.message);
+    res.status(400).send(err.message);
   }
 });
 
@@ -74,7 +74,7 @@ authRouter.post("/logout", async (req, res) => {
 // Get all the kitchen menu
 authRouter.get("/userProfile", userAuth, async (req, res) => {
   try {
-    const  emailId  = req.query.emailId;
+    const emailId = req.query.emailId;
     const userProfile = await User.findOne({ emailId: emailId });
 
     res.json({
@@ -82,7 +82,7 @@ authRouter.get("/userProfile", userAuth, async (req, res) => {
       data: userProfile,
     });
   } catch (err) {
-    req.statusCode(400).send("ERROR: " + err.message);
+    req.statusCode(400).send(err.message);
   }
 });
 

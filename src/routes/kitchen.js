@@ -46,7 +46,21 @@ kitchenRouter.get("/kitchen", userAuth, async (req, res) => {
   }
 });
 
-// Get all the kitchen menu
+// Get All Kitchens
+kitchenRouter.get("/kitchen/all", userAuth, async (req, res) => {
+  try {
+    const kitchens = await Kitchen.find();
+
+    res.json({
+      message: "All kitchens fetched successfully",
+      data: kitchens,
+    });
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
+// Get the kitchen menu
 kitchenRouter.get("/kitchen/kitchenMenu", userAuth, async (req, res) => {
   try {
     const kitchen  = req.query.kitchen; //kitchen id
