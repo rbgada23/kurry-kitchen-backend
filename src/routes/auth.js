@@ -11,7 +11,7 @@ authRouter.post("/signup", async (req, res) => {
     // Validation of data
     validateSignUpData(req);
 
-    const { firstName, lastName, emailId, password, userType } = req.body;
+    const { firstName, lastName, emailId, password, userType,contactNumber } = req.body;
 
     // Encrypt the password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -23,15 +23,17 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: passwordHash,
-      userType
+      userType,
+      contactNumber
     });
-
     const savedUser = await user.save();
     const token = await savedUser.getJWT();
 
     res.cookie("token", token, {
       expires: new Date(Date.now() + 8 * 3600000),
     });
+
+    console.log(token);
 
     res.json({ message: "User Added successfully!", data: savedUser });
   } catch (err) {

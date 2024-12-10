@@ -41,6 +41,12 @@ const userSchema = new mongoose.Schema(
         message: `{VALUE} is not a valid user type`,
       },
     },
+    contactNumber : {
+      type : String
+    },
+    address : {
+      type : String
+    }
   },
   {
     timestamps: true,

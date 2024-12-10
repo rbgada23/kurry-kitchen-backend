@@ -22,24 +22,28 @@ app.use(cors({
   origin: 'http://localhost:3000', // Your frontend URL
   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }));
-
 const authRouter = require("./routes/auth");
 const kitchenRouter = require("./routes/kitchen")
 const orderRouter = require("./routes/order");
+const whatsappRouter = require("./routes/whatsapp");
+
 const order = require("./models/order");
 app.use("/", authRouter);
 app.use("/", kitchenRouter);
 app.use("/", orderRouter);
+app.use("/",whatsappRouter);
 
 // Listen for client connections
 io.on('connection', (socket) => {
-  console.log('Client connected');
+  //console.log('Client connected');
   
   // Disconnect event
   socket.on('disconnect', () => {
-    console.log('Client disconnected');
+    console.log('Client disconnected'); 
   });
 });
+
+
 
 // Watch the Order collection for changes
 order.watch().on('change', (change) => {
