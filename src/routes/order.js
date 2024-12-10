@@ -141,5 +141,23 @@ orderRouter.get("/order", userAuth, async (req, res) => {
   }
 });
 
+// Get Order Count
+orderRouter.get("/order/count", userAuth, async (req, res) => {
+  try {
+    const kitchenId = req.query.kitchenId; // Optional filter by kitchenId
+
+    // Count orders, optionally filtered by kitchenId
+    const filter = kitchenId ? { kitchenId } : {};
+    const orderCount = await Order.countDocuments(filter);
+
+    res.json({
+      message: "Order count fetched successfully",
+      totalOrders: orderCount,
+    });
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
 
 module.exports = orderRouter;
