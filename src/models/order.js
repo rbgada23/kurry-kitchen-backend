@@ -12,13 +12,16 @@ const orderSchema = new Schema({
     ref: 'User',
     required: true,
   },
-  items: [
-    {
-      menuItemId: { type: Schema.Types.ObjectId, ref: 'KitchenMenu', required: true },
-      quantity: { type: Number, required: true, min: 1 },
-      price: { type: Schema.Types.Decimal128, required: true },
-    },
-  ],
+  items :{
+   type: mongoose.Schema.Types.Mixed
+  },
+  // items: [
+  //   {
+  //     menuItemId: { type: Schema.Types.ObjectId, ref: 'KitchenMenu', required: true },
+  //     quantity: { type: Number, required: true, min: 1 },
+  //     price: { type: Schema.Types.Decimal128, required: true },
+  //   },
+  // ],
   totalAmount: {
     type: Schema.Types.Decimal128,
     required: true,

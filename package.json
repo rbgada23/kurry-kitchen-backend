@@ -17,6 +17,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.21.0",
+    "firebase": "^11.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.0",
     "mongoose-extend-schema": "^1.0.0",
