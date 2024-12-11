@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 const KitchenMenu = require("../models/kitchenMenu");
 const KitchenDailyMenu = require("../models/kitchenDailyMenu");
 
@@ -6,6 +7,9 @@ const kitchenRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 const Kitchen = require("../models/kitchen");
 const kitchenMenu = require("../models/kitchenMenu");
+// Configure multer to store images temporarily in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 //Post Kitchen
 kitchenRouter.post("/kitchen", userAuth, async (req, res) => {
@@ -66,39 +70,66 @@ kitchenRouter.get("/kitchen/kitchenMenu", userAuth, async (req, res) => {
   try {
     const kitchen = req.query.kitchen; //kitchen id
     const kitchenMenu = await KitchenMenu.find({ kitchen: kitchen });
+
+    //Convert image data to Base64
+    let imageBase64 = null;
+    if (kitchenMenu.image) {
+      imageBase64 = `data:${
+        kitchenMenu.image.contentType
+      };base64,${menu.image.data.toString("base64")}`;
+    }
+
     res.json({
-      message: "Data fetched successfully",
+      message: "All kitchens fetched successfully",
       data: kitchenMenu,
+      image: imageBase64, // Include the Base64-encoded image
     });
+    // res.json({
+    //   data : kitchenMenu,
+    //   message:"Kitchen Menu fetched successfully",
+    // });
   } catch (err) {
     req.statusCode(400).send("ERROR: " + err.message);
   }
 });
 
 //Post kitchen Menu
-kitchenRouter.post("/kitchen/kitchenMenu", userAuth, async (req, res) => {
-  try {
-    //ToDo : Add validations
+kitchenRouter.post(
+  "/kitchen/kitchenMenu",
+  userAuth,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      //ToDo : Add validations
 
-    const { name, type, items, price, kitchen } = req.body;
-    const kitchenMenu = new KitchenMenu({
-      name,
-      type,
-      items,
-      price,
-      kitchen,
-    });
+      const { name, type, items, price, kitchen } = req.body;
+      const kitchenMenu = new KitchenMenu({
+        name,
+        type,
+        items,
+        price,
+        kitchen,
+      });
 
-    const data = await kitchenMenu.save();
+      // Attach image to the document
+      if (req.file) {
+        kitchenMenu.image = {
+          data: req.file.buffer, // Store image data in binary format
+          contentType: req.file.mimetype,
+        };
+      }
 
-    res.json({
-      message: "Kitchen Menu Added",
-      data,
-    });
-  } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
+      const data = await kitchenMenu.save();
+
+      res.json({
+        message: "Kitchen Menu Added",
+        data,
+      });
+    } catch (err) {
+      res.status(400).send("ERROR: " + err.message);
+    }
   }
-});
+);
 
 //Put operations on kitchen Menu
 kitchenRouter.put("/kitchen/kitchenMenu", userAuth, async (req, res) => {
