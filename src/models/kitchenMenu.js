@@ -19,10 +19,15 @@ const kitchenMenuSchema = new mongoose.Schema(
       type: Number,
     },
     kitchen : {type: Schema.Types.ObjectId, ref: 'Kitchen'},
+    image: {
+      data: Buffer,
+      contentType: String, // Stores the MIME type (e.g., "image/png")
+    },
   },
   {
     timestamps: true,
-  }
+  },
+ 
 );
 
 module.exports = mongoose.model("KitchenMenu", kitchenMenuSchema);
