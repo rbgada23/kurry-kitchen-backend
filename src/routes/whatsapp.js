@@ -3,10 +3,16 @@ const { userAuth } = require("../middlewares/auth");
 const User = require("../models/user");
 const Kitchen = require("../models/kitchen");
 const Order = require("../models/order");
+const axios = require("axios");
+
 
 const whatsappRouter = express.Router();
 
 const VERIFY_TOKEN = "akash";
+
+const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0/436514232886145/messages";
+const ACCESS_TOKEN = "EAARkrOqqAowBOxHyEvRGbFkwHBl6cmROweHkWTX4wJIdlz8H45nWp91oZCu1ZCvDMJuK6IesSiYPAbgZAhJEGzan0BgMSVFEYPpo8BJbZACZBWmU8wxAn7k0Rfyx1uuf1kl52NRXVnGZCBdgnd7hZCUaxPHQLeSZAZCQp2MKa9bBJ0UVZCMa5tdnqHcMTQx1CMw9kuea1HfR3G4U4ymEnmPgTVk9cv5ntTi9Gg5lhNqLyDlMwZD";
+
 
 async function getUserByContactNumber(contactNumber) {
   try {
@@ -42,6 +48,7 @@ async function getKitchenByContactNumber(contactNumber) {
   }
 }
 
+
 // Endpoint to handle the webhook verification
 whatsappRouter.get("/webhook", async (req, res) => {
   console.log("inside");
@@ -67,43 +74,74 @@ whatsappRouter.post("/webhook", async (req, res) => {
         // Check if the change object is a message
         if (change.value && change.value.messages) {
           const message = change.value.messages[0];
-          const customerContactNumber = message.from;
-          const kitchenContactNumber =
-            change?.value?.metadata?.display_phone_number;
-          const items = message.text ? message.text.body : "No text message";
-          console.log(`Message from ${customerContactNumber}: ${items}`);
-          const customer = await getUserByContactNumber(customerContactNumber);
-          const kitchen = await getKitchenByContactNumber(kitchenContactNumber);
-          console.log(customer);
-          //Place the order
-          const userId = customer._id;
-          const kitchenId = kitchen._id;
-          const itemAmount = 10;
-          const deliveryAddress = '123 Main St';
-          const orderStatus = 'pending';
-          const platform = 'WhatsApp';
-          const totalAmount = 10.00;
-          const orderDate = new Date();
-          // Step 4: Create the Order object
-          const order = new Order({
-            kitchenId,
-            userId,
-            items,
-            itemAmount,
-            totalAmount,
-            deliveryAddress,
-            orderStatus,
-            platform,
-            orderDate,
-          });
+          console.log(message.text.body);
 
-          // Step 5: Save the order to the database
-          const data = await order.save();
+          //Send menu here once message is recieved - //Check if its a hi/hey/hello and send the order menu
+          if (
+            message.text.body.includes("Hi") ||
+            message.text.body.includes("Hey") ||
+            message.text.body.includes("Hello") ||
+            message.text.body.includes("Menu for today")
+          ) {
+            await axios.post(
+              WHATSAPP_API_URL,
+              {
+                messaging_product: "whatsapp",
+                to: message.from,
+                type: "template",
+                template: {
+                  name: "kurry_kitchen",
+                  language: { code: "en_US" },
+                },
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${ACCESS_TOKEN}`,
+                },
+              }
+            );
+          }else{
+            const customerContactNumber = message.from;
+            const kitchenContactNumber =
+              change?.value?.metadata?.display_phone_number;
+            const items = message.text ? message.text.body : "No text message";
+            console.log(`Message from ${customerContactNumber}: ${items}`);
+            const customer = await getUserByContactNumber(customerContactNumber);
+            const kitchen = await getKitchenByContactNumber(kitchenContactNumber);
+            console.log(customer);
+            //Place the order
+            const userId = customer._id;
+            const kitchenId = kitchen._id;
+            const itemAmount = 10;
+            const deliveryAddress = "123 Main St";
+            const orderStatus = "pending";
+            const platform = "WhatsApp";
+            const totalAmount = 10.0;
+            const orderDate = new Date();
+            // Step 4: Create the Order object
+            const order = new Order({
+              kitchenId,
+              userId,
+              items,
+              itemAmount,
+              totalAmount,
+              deliveryAddress,
+              orderStatus,
+              platform,
+              orderDate,
+            });
+  
+            // Step 5: Save the order to the database
+            const data = await order.save();
+  
+            console.log(kitchen);
+          }
 
-          console.log(kitchen);
+         
         }
       });
-    });
+    }); 
   }
 
   res.status(200).send("Webhook received");
