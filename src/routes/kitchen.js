@@ -72,7 +72,6 @@ kitchenRouter.get("/kitchen/profile", userAuth, async (req, res) => {
     const kitchenProfile = await Kitchen.findById(kitchenId).select(
       "name address contactNumber image"
     );
-    console.log('hello',kitchenProfile.image);
 
     let logoBase64 = null;
     if (kitchenProfile.image?.data) {

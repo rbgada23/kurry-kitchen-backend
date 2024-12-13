@@ -11,7 +11,7 @@ authRouter.post("/signup", async (req, res) => {
     // Validation of data
     validateSignUpData(req);
 
-    const { firstName, lastName, emailId, password, userType,contactNumber } = req.body;
+    const { firstName, lastName, emailId, password, userType, contactNumber } = req.body;
 
     // Encrypt the password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -87,5 +87,47 @@ authRouter.get("/userProfile", userAuth, async (req, res) => {
     req.statusCode(400).send(err.message);
   }
 });
+
+// Update user profile
+// Update user profile by userId
+authRouter.put("/updateProfile", userAuth, async (req, res) => {
+  try {
+    const { userId } = req.query; // Get userId from query params
+    const { firstName, lastName, emailId, contactNumber, address } = req.body;
+
+    // Find the user by userId
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // If the user attempts to update the emailId, ensure it's unique
+    if (emailId && emailId !== user.emailId) {
+      const existingUser = await User.findOne({ emailId: emailId });
+      if (existingUser) {
+        throw new Error("Email ID already in use");
+      }
+    }
+
+    // Update the user fields
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.emailId = emailId || user.emailId;
+    user.contactNumber = contactNumber || user.contactNumber;
+    user.address = address || user.address;
+
+    // Save the updated user profile
+    const updatedUser = await user.save();
+
+    res.json({
+      message: "Profile updated successfully",
+      data: updatedUser,
+    });
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+
 
 module.exports = authRouter;
