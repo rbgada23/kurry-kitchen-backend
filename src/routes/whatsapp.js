@@ -11,7 +11,7 @@ const whatsappRouter = express.Router();
 const VERIFY_TOKEN = "akash";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0/436514232886145/messages";
-const ACCESS_TOKEN = "EAARkrOqqAowBOxHyEvRGbFkwHBl6cmROweHkWTX4wJIdlz8H45nWp91oZCu1ZCvDMJuK6IesSiYPAbgZAhJEGzan0BgMSVFEYPpo8BJbZACZBWmU8wxAn7k0Rfyx1uuf1kl52NRXVnGZCBdgnd7hZCUaxPHQLeSZAZCQp2MKa9bBJ0UVZCMa5tdnqHcMTQx1CMw9kuea1HfR3G4U4ymEnmPgTVk9cv5ntTi9Gg5lhNqLyDlMwZD";
+const ACCESS_TOKEN = "EAARkrOqqAowBO3wEdwUDZCmjNDNtBn2zeNBhFVS7D3JQGYBtEDZBnKZASKwaEQ0VeksHaZCPsb3ZAx8rA7gI3pbwAh2uZAjnNxVIX7SosFFyJvRYIxAJFYVi0j0HcJVVYYaryTlEbxZBnACwgnmqJKI7ZCNeLhlJyYGVv6yjF3zrBWILJP1cLu0ZAYTKEw2UBstoZBOdeES5pqMfWZCpXZAeseEGiEfRV4pfwSwGyLM8PGFggLYZD";
 
 
 async function getUserByContactNumber(contactNumber) {
@@ -74,15 +74,10 @@ whatsappRouter.post("/webhook", async (req, res) => {
         // Check if the change object is a message
         if (change.value && change.value.messages) {
           const message = change.value.messages[0];
-          console.log(message.text.body);
+          console.log(message.text.body.includes("Hi") + message.text.body);
 
           //Send menu here once message is recieved - //Check if its a hi/hey/hello and send the order menu
-          if (
-            message.text.body.includes("Hi") ||
-            message.text.body.includes("Hey") ||
-            message.text.body.includes("Hello") ||
-            message.text.body.includes("Menu for today")
-          ) {
+          if (!(/\d/.test(message.text.body))) {
             await axios.post(
               WHATSAPP_API_URL,
               {
@@ -137,7 +132,6 @@ whatsappRouter.post("/webhook", async (req, res) => {
   
             console.log(kitchen);
           }
-
          
         }
       });
