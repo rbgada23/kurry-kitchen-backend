@@ -5,8 +5,53 @@ const { userAuth } = require("../middlewares/auth");
 const Order = require("../models/order");
 const User = require("../models/user");
 const KitchenMenu = require("../models/kitchenMenu");
+const axios = require("axios");
+
+const VERIFY_TOKEN = "akash";
+
+const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0/436514232886145/messages";
+const ACCESS_TOKEN = "EAARkrOqqAowBOxHyEvRGbFkwHBl6cmROweHkWTX4wJIdlz8H45nWp91oZCu1ZCvDMJuK6IesSiYPAbgZAhJEGzan0BgMSVFEYPpo8BJbZACZBWmU8wxAn7k0Rfyx1uuf1kl52NRXVnGZCBdgnd7hZCUaxPHQLeSZAZCQp2MKa9bBJ0UVZCMa5tdnqHcMTQx1CMw9kuea1HfR3G4U4ymEnmPgTVk9cv5ntTi9Gg5lhNqLyDlMwZD";
+
 
 const { ObjectId } = require("mongodb");
+
+async function sendOrderConfirmationMessage(phoneNumber, name, orderNumber, deliveryDate) {
+  try {
+      const response = await axios.post(
+          WHATSAPP_API_URL,
+          {
+              messaging_product: "whatsapp",
+              to: phoneNumber,
+              type: "template",
+              template: {
+                  name: "order_management_2", 
+                  language: { code: "en_US" }, 
+                  components: [
+                      {
+                          type: "body",
+                          parameters: [
+                              { type: "text", text: name }, 
+                              { type: "text", text: orderNumber }, 
+                              { type: "text", text: deliveryDate }, 
+                          ],
+                      },
+                  ],
+              },
+          },
+          {
+              
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${ACCESS_TOKEN}`,
+              },
+          }
+      );
+      console.log("Order confirmation message sent successfully!", response.data);
+  } catch (error) {
+      console.error("Error sending order confirmation message:", error.response?.data || error.message);
+  }
+}
+
 //Post Order
 orderRouter.post("/order", userAuth, async (req, res) => {
   try {
@@ -60,6 +105,9 @@ orderRouter.put("/order", userAuth, async (req, res) => {
       returnDocument: "after",
     });
     if (result) {
+      //Send message to the user
+      sendOrderConfirmationMessage("+12018927672", "Rishabh", orderId, "December 12, 2024");
+
       const updatedData = result;
       res.json({
         message: `Order ` + req.body.orderStatus + ` succesfully`,
@@ -72,7 +120,8 @@ orderRouter.put("/order", userAuth, async (req, res) => {
   }
 });
 
-orderRouter.get("/order", userAuth, async (req, res) => {
+//By kitchen Id
+orderRouter.get("/order/kitchen", userAuth, async (req, res) => {
   try {
     const kitchenId = req.query.kitchenId;
 
@@ -141,5 +190,74 @@ orderRouter.get("/order", userAuth, async (req, res) => {
   }
 });
 
+//By user Id
+orderRouter.get("/order/user/history", userAuth, async (req, res) => {
+  try {
+    const userId = req.query.userId;
+
+    // Fetch orders for the given kitchenId
+    const orders = await Order.find({ userId: userId , orderStatus: 'accepted'});
+
+    // Extract userIds
+    const userIds = orders.map((order) => new ObjectId(order.userId));
+
+    // Extract menuItemIds only if `items` is an array
+    const menuItemIds = orders.flatMap((order) =>
+      Array.isArray(order.items)
+        ? order.items
+            .filter((item) => item.menuItemId) // Ensure menuItemId exists
+            .map((item) => item.menuItemId)
+        : [] // Skip for plain text `items`
+    );
+
+    // Fetch users and menu items from the database
+    const users = await User.find({ _id: { $in: userIds } });
+    const menuItems = menuItemIds.length
+      ? await KitchenMenu.find({ _id: { $in: menuItemIds } })
+      : [];
+
+    // Create lookup maps for users and menu items
+    const userMap = users.reduce((acc, user) => {
+      acc[user._id.toString()] = user; // Map userId to user object
+      return acc;
+    }, {});
+
+    const menuMap = menuItems.reduce((acc, menuItem) => {
+      acc[menuItem._id.toString()] = menuItem.toObject(); // Map menuItemId to menuItem object
+      return acc;
+    }, {});
+
+    // Build the result
+    const result = orders.map((order) => {
+      const plainOrder = order.toObject(); // Convert order to plain object
+
+      let updatedItems;
+      if (Array.isArray(plainOrder.items)) {
+        // Use Case 1: Structured `items` array
+        updatedItems = plainOrder.items.map((item) => ({
+          ...item,
+          menuItemObj: menuMap[item.menuItemId?.toString()] || null, // Map menuItemObj or set to null
+        }));
+      } else {
+        // Use Case 2: Plain text `items`
+        updatedItems = plainOrder.items; // Keep plain text as is
+      }
+
+      return {
+        ...plainOrder,
+        userObj: userMap[order.userId] || null, // Map user object or set to null
+        items: updatedItems, // Updated items
+      };
+    });
+
+    // Send the response
+    res.json({
+      message: "All orders fetched successfully",
+      data: result,
+    });
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
 
 module.exports = orderRouter;
