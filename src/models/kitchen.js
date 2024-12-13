@@ -15,19 +15,19 @@ const operatingHoursSchema = new mongoose.Schema({
 
 const kitchenSchema = new mongoose.Schema(
   {
-     name: {
+    name: {
       type: String,
       required: true,
       maxLength: 50,
-      unique : true
+      unique: true
     },
-    address :{
-        type: String,
+    address: {
+      type: String,
     },
-    contactNumber : {
-        type : String,
+    contactNumber: {
+      type: String,
     },
-    operatingHours : {
+    operatingHours: {
       monday: operatingHoursSchema,    // Nested schema for Monday
       tuesday: operatingHoursSchema,   // Nested schema for Tuesday
       wednesday: operatingHoursSchema, // Nested schema for Wednesday
@@ -36,9 +36,12 @@ const kitchenSchema = new mongoose.Schema(
       saturday: operatingHoursSchema,  // Nested schema for Saturday
       sunday: operatingHoursSchema     // Nested schema for Sunday
     },
-    user : {type: Schema.Types.ObjectId, ref: 'User'},
+    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    image: {
+      data: Buffer,
+      contentType: String, // Stores the MIME type (e.g., "image/png")
+    },
   },
-  
   {
     timestamps: true,
   }

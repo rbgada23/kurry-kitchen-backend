@@ -65,6 +65,75 @@ kitchenRouter.get("/kitchen/all", userAuth, async (req, res) => {
   }
 });
 
+// Get Kitchen Profile
+kitchenRouter.get("/kitchen/profile", userAuth, async (req, res) => {
+  try {
+    const kitchenId = req.query.kitchenId; // Pass kitchen ID as a query parameter
+    const kitchenProfile = await Kitchen.findById(kitchenId).select(
+      "name address contactNumber image"
+    );
+    console.log('hello',kitchenProfile.image);
+
+    let logoBase64 = null;
+    if (kitchenProfile.image?.data) {
+      logoBase64 = `data:${kitchenProfile.image.contentType};base64,${kitchenProfile.image.data?.toString("base64")}`;
+    }
+
+    res.json({
+      message: "Kitchen profile fetched successfully",
+      data: {
+        name: kitchenProfile.name,
+        address: kitchenProfile.address,
+        contactNumber: kitchenProfile.contactNumber,
+        logo: logoBase64,
+      },
+    });
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
+// Update Kitchen Profile
+kitchenRouter.put(
+  "/kitchen/profile",
+  userAuth,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const kitchenId = req.query.kitchenId; // Pass kitchen ID as a query parameter
+      const { name, address } = req.body;
+
+      const updateData = { name, address };
+
+      // Update logo if a new image is provided
+      if (req.file) {
+        updateData.image = {
+          data: req.file.buffer,
+          contentType: req.file.mimetype,
+        };
+      }
+
+      const updatedKitchen = await Kitchen.findByIdAndUpdate(
+        kitchenId,
+        { $set: updateData },
+        { new: true } // Return the updated document
+      );
+
+      if (!updatedKitchen) {
+        return res.status(404).json({ message: "Kitchen not found" });
+      }
+
+      res.json({
+        message: "Kitchen profile updated successfully",
+        data: updatedKitchen,
+      });
+    } catch (err) {
+      res.status(400).send("ERROR: " + err.message);
+    }
+  }
+);
+
+
 // Get the kitchen menu
 kitchenRouter.get("/kitchen/kitchenMenu", userAuth, async (req, res) => {
   try {
@@ -74,9 +143,8 @@ kitchenRouter.get("/kitchen/kitchenMenu", userAuth, async (req, res) => {
     //Convert image data to Base64
     let imageBase64 = null;
     if (kitchenMenu.image) {
-      imageBase64 = `data:${
-        kitchenMenu.image.contentType
-      };base64,${menu.image.data.toString("base64")}`;
+      imageBase64 = `data:${kitchenMenu.image.contentType
+        };base64,${menu.image.data.toString("base64")}`;
     }
 
     res.json({
