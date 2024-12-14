@@ -265,4 +265,35 @@ orderRouter.get("/order/user/history", userAuth, async (req, res) => {
   }
 });
 
+//Put Order
+orderRouter.put("/order/orderStatus", userAuth,
+  async (req, res) => {
+    try {
+      const orderId = req.query.id;
+      const filter = { _id: orderId }; // The condition to find the document
+      const orderStatus = req.query.orderStatus;
+
+      //Note : If we want to also update order in future, we can update req.body instead of only orderstatus
+      const updateDoc = {
+        $set: { orderStatus: orderStatus },
+      };
+      const result = await Order.findOneAndUpdate(filter, updateDoc, {
+        returnDocument: "after",
+      });
+      if (result) {
+        //Send message to the user
+        //sendOrderConfirmationMessage("+12018927672", "Rishabh", orderId, "December 12, 2024");
+
+        const updatedData = result; 
+        res.json({
+          message: `Order ` + orderStatus + ` succesfully`,
+          updatedData,
+        });
+      }
+    } catch (err) {
+      console.log(err.message);
+      res.status(400).send("ERROR: " + err.message);
+    }
+  });
+
 module.exports = orderRouter;
