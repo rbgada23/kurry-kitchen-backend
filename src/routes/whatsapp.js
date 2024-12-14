@@ -11,7 +11,7 @@ const whatsappRouter = express.Router();
 const VERIFY_TOKEN = "akash";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0/436514232886145/messages";
-const ACCESS_TOKEN = "EAARkrOqqAowBO3wEdwUDZCmjNDNtBn2zeNBhFVS7D3JQGYBtEDZBnKZASKwaEQ0VeksHaZCPsb3ZAx8rA7gI3pbwAh2uZAjnNxVIX7SosFFyJvRYIxAJFYVi0j0HcJVVYYaryTlEbxZBnACwgnmqJKI7ZCNeLhlJyYGVv6yjF3zrBWILJP1cLu0ZAYTKEw2UBstoZBOdeES5pqMfWZCpXZAeseEGiEfRV4pfwSwGyLM8PGFggLYZD";
+const ACCESS_TOKEN = "EAARkrOqqAowBOZCgv3H3DhJavm13uDcBX8Y8iWmyAOAQDusD2lf6RTZCKppfYZCZBrasx5qpVppoGJZAIb8uqJuAvNDkcMJlUv3VZCLt37o57qCgDhpoKe1mOEMHRD4yzq8MbnF4LnZBV9wv0hPiX4ZBKRNIlNl7UXQeUR2ZBrIilZAeyQsXar1tNrbEoInAPy7DySFieQInYWjvyKDd3oIHgRBBwyVGOFIRTeDb4tNZAZBrUfQZD";
 
 
 async function getUserByContactNumber(contactNumber) {
@@ -104,7 +104,7 @@ whatsappRouter.post("/webhook", async (req, res) => {
             console.log(`Message from ${customerContactNumber}: ${items}`);
             const customer = await getUserByContactNumber(customerContactNumber);
             const kitchen = await getKitchenByContactNumber(kitchenContactNumber);
-            console.log(customer);
+            console.log(kitchenContactNumber);
             //Place the order
             const userId = customer._id;
             const kitchenId = kitchen._id;

@@ -43,7 +43,7 @@ const kitchenSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, 
   }
 );
 
