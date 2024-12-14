@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 
 const orderRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
@@ -6,6 +7,8 @@ const Order = require("../models/order");
 const User = require("../models/user");
 const KitchenMenu = require("../models/kitchenMenu");
 const axios = require("axios");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 const VERIFY_TOKEN = "akash";
 
@@ -17,38 +20,38 @@ const { ObjectId } = require("mongodb");
 
 async function sendOrderConfirmationMessage(phoneNumber, name, orderNumber, deliveryDate) {
   try {
-      const response = await axios.post(
-          WHATSAPP_API_URL,
-          {
-              messaging_product: "whatsapp",
-              to: phoneNumber,
-              type: "template",
-              template: {
-                  name: "order_management_2", 
-                  language: { code: "en_US" }, 
-                  components: [
-                      {
-                          type: "body",
-                          parameters: [
-                              { type: "text", text: name }, 
-                              { type: "text", text: orderNumber }, 
-                              { type: "text", text: deliveryDate }, 
-                          ],
-                      },
-                  ],
-              },
-          },
-          {
-              
-              headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${ACCESS_TOKEN}`,
-              },
-          }
-      );
-      console.log("Order confirmation message sent successfully!", response.data);
+    const response = await axios.post(
+      WHATSAPP_API_URL,
+      {
+        messaging_product: "whatsapp",
+        to: phoneNumber,
+        type: "template",
+        template: {
+          name: "order_management_2",
+          language: { code: "en_US" },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: name },
+                { type: "text", text: orderNumber },
+                { type: "text", text: deliveryDate },
+              ],
+            },
+          ],
+        },
+      },
+      {
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+        },
+      }
+    );
+    console.log("Order confirmation message sent successfully!", response.data);
   } catch (error) {
-      console.error("Error sending order confirmation message:", error.response?.data || error.message);
+    console.error("Error sending order confirmation message:", error.response?.data || error.message);
   }
 }
 
@@ -91,34 +94,36 @@ orderRouter.post("/order", userAuth, async (req, res) => {
 });
 
 //Put Order
-orderRouter.put("/order", userAuth, async (req, res) => {
-  try {
-    const orderId = req.query.id;
-    const filter = { _id: orderId }; // The condition to find the document
-    const data = req.body;
+orderRouter.put("/order", userAuth,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const orderId = req.query.id;
+      const filter = { _id: orderId }; // The condition to find the document
+      const data = req.body;
 
-    //Note : If we want to also update order in future, we can update req.body instead of only orderstatus
-    const updateDoc = {
-      $set: { orderStatus: req.body.orderStatus },
-    };
-    const result = await Order.findOneAndUpdate(filter, updateDoc, {
-      returnDocument: "after", 
-    });
-    if (result) {
-      //Send message to the user
-      sendOrderConfirmationMessage("+12018927672", "Rishabh", orderId, "December 12, 2024");
-
-      const updatedData = result;
-      res.json({
-        message: `Order ` + req.body.orderStatus + ` succesfully`,
-        updatedData,
+      //Note : If we want to also update order in future, we can update req.body instead of only orderstatus
+      const updateDoc = {
+        $set: { orderStatus: req.body.orderStatus },
+      };
+      const result = await Order.findOneAndUpdate(filter, updateDoc, {
+        returnDocument: "after",
       });
+      if (result) {
+        //Send message to the user
+        sendOrderConfirmationMessage("+12018927672", "Rishabh", orderId, "December 12, 2024");
+
+        const updatedData = result;
+        res.json({
+          message: `Order ` + req.body.orderStatus + ` succesfully`,
+          updatedData,
+        });
+      }
+    } catch (err) {
+      console.log(err.message);
+      res.status(400).send("ERROR: " + err.message);
     }
-  } catch (err) {
-    console.log(err.message);
-    res.status(400).send("ERROR: " + err.message);
-  }
-});
+  });
 
 //By kitchen Id
 orderRouter.get("/order/kitchen", userAuth, async (req, res) => {
@@ -135,8 +140,8 @@ orderRouter.get("/order/kitchen", userAuth, async (req, res) => {
     const menuItemIds = orders.flatMap((order) =>
       Array.isArray(order.items)
         ? order.items
-            .filter((item) => item.menuItemId) // Ensure menuItemId exists
-            .map((item) => item.menuItemId)
+          .filter((item) => item.menuItemId) // Ensure menuItemId exists
+          .map((item) => item.menuItemId)
         : [] // Skip for plain text `items`
     );
 
@@ -196,7 +201,7 @@ orderRouter.get("/order/user/history", userAuth, async (req, res) => {
     const userId = req.query.userId;
 
     // Fetch orders for the given kitchenId
-    const orders = await Order.find({ userId: userId , orderStatus: 'accepted'});
+    const orders = await Order.find({ userId: userId, orderStatus: 'accepted' });
 
     // Extract userIds
     const userIds = orders.map((order) => new ObjectId(order.userId));
@@ -205,8 +210,8 @@ orderRouter.get("/order/user/history", userAuth, async (req, res) => {
     const menuItemIds = orders.flatMap((order) =>
       Array.isArray(order.items)
         ? order.items
-            .filter((item) => item.menuItemId) // Ensure menuItemId exists
-            .map((item) => item.menuItemId)
+          .filter((item) => item.menuItemId) // Ensure menuItemId exists
+          .map((item) => item.menuItemId)
         : [] // Skip for plain text `items`
     );
 
