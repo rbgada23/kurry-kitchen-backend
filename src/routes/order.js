@@ -13,7 +13,7 @@ const upload = multer({ storage });
 const VERIFY_TOKEN = "akash";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0/436514232886145/messages";
-const ACCESS_TOKEN = "EAARkrOqqAowBO9H4FkQ0MZC4bw2XTPc34MZAIJbX8j1ttAEYFG6ai7MEyAOMZBTqSAJPX3eElYfETFLxnlMA8WEZBRlutevBG67TD3aexJTawAuHJbAbCGSj7lZBfKKafpmKvvrmMMXgIWpREwkZC9KZAXoZBLeDZCOpZCchyi4t6r7tMvMyu5Twyvf0bJMuZB0PbIP8uEiSsZChEirl9qYGbddgTTmZBklX8IVp53MdfsbVAqdcD";
+const ACCESS_TOKEN = "EAARkrOqqAowBOZCtHyyn1vmFMtr1Y7rQkZA4sZBQzoZC8JpolcyL9ZAFzomZCP5cU8t19oKMeHTQDVuCM9ZCm868NLjkoI7DQnEV6wU1ddEwMymRymUb6CZB6JvZCo5cfpJKOg8S386e2Cok003JkvIqxMZCvrlCKjfUVjwkXEHP9Qnmf5uVxM6jZCU0aqFy9MPRZAr3t57EBoENpVI13Ef6dZAKyPQhASZA2Nh3fQ7A2BtTiEYuAZD";
 
 
 const { ObjectId } = require("mongodb");
@@ -36,6 +36,44 @@ async function sendOrderConfirmationMessage(phoneNumber, name, orderNumber, deli
                 { type: "text", text: name },
                 { type: "text", text: orderNumber },
                 { type: "text", text: deliveryDate },
+              ],
+            },
+          ],
+        },
+      },
+      {
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+        },
+      }
+    );
+    console.log("Order confirmation message sent successfully!", response.data);
+  } catch (error) {
+    console.error("Error sending order confirmation message:", error.response?.data || error.message);
+  }
+}
+
+async function sendOrderRejectionMessage( phoneNumber,name, orderNumber) {
+  try {
+    const response = await axios.post(
+      WHATSAPP_API_URL,
+      {
+        messaging_product: "whatsapp",
+        to: phoneNumber,
+        type: "template",
+        template: {
+          name: "fail_1",
+          language: { code: "en_US" },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: name },
+                { type: "text", text: " " },
+                { type: "text", text: "order" },
+                { type: "text", text: "further" },
               ],
             },
           ],
@@ -282,10 +320,15 @@ orderRouter.put("/order/orderStatus", userAuth,
       const result = await Order.findOneAndUpdate(filter, updateDoc, {
         returnDocument: "after",
       });
-      if (result) {
+      if (result) { 
         console.log(data);
         //Send message to the user
-        sendOrderConfirmationMessage(data.userContactNumber, data.userName, orderId, "35 mins");
+        if(orderStatus == "accepted"){
+          sendOrderConfirmationMessage(data.userContactNumber, data.userName, orderId, "35 mins");
+
+        }else{
+          sendOrderRejectionMessage(data.userContactNumber,data.userName, orderId);
+        }
 
         const updatedData = result; 
         res.json({
