@@ -13,7 +13,7 @@ const upload = multer({ storage });
 const VERIFY_TOKEN = "akash";
 
 const WHATSAPP_API_URL = "https://graph.facebook.com/v21.0/436514232886145/messages";
-const ACCESS_TOKEN = "EAARkrOqqAowBOZCgv3H3DhJavm13uDcBX8Y8iWmyAOAQDusD2lf6RTZCKppfYZCZBrasx5qpVppoGJZAIb8uqJuAvNDkcMJlUv3VZCLt37o57qCgDhpoKe1mOEMHRD4yzq8MbnF4LnZBV9wv0hPiX4ZBKRNIlNl7UXQeUR2ZBrIilZAeyQsXar1tNrbEoInAPy7DySFieQInYWjvyKDd3oIHgRBBwyVGOFIRTeDb4tNZAZBrUfQZD";
+const ACCESS_TOKEN = "EAARkrOqqAowBO9H4FkQ0MZC4bw2XTPc34MZAIJbX8j1ttAEYFG6ai7MEyAOMZBTqSAJPX3eElYfETFLxnlMA8WEZBRlutevBG67TD3aexJTawAuHJbAbCGSj7lZBfKKafpmKvvrmMMXgIWpREwkZC9KZAXoZBLeDZCOpZCchyi4t6r7tMvMyu5Twyvf0bJMuZB0PbIP8uEiSsZChEirl9qYGbddgTTmZBklX8IVp53MdfsbVAqdcD";
 
 
 const { ObjectId } = require("mongodb");
@@ -110,8 +110,9 @@ orderRouter.put("/order", userAuth,
         returnDocument: "after",
       });
       if (result) {
+        console.log(data);
         //Send message to the user
-        sendOrderConfirmationMessage("+12018927672", "Rishabh", orderId, "December 12, 2024");
+        sendOrderConfirmationMessage(data.userContactNumber, data.userName, orderId, new Date());
 
         const updatedData = result;
         res.json({
@@ -119,9 +120,9 @@ orderRouter.put("/order", userAuth,
           updatedData,
         });
       }
-    } catch (err) {
+    } catch (err) { 
       console.log(err.message);
-      res.status(400).send("ERROR: " + err.message);
+      res.status(400).send("ERROR: " + err.message); 
     }
   });
 
@@ -272,6 +273,7 @@ orderRouter.put("/order/orderStatus", userAuth,
       const orderId = req.query.id;
       const filter = { _id: orderId }; // The condition to find the document
       const orderStatus = req.query.orderStatus;
+      const data = req.body;
 
       //Note : If we want to also update order in future, we can update req.body instead of only orderstatus
       const updateDoc = {
@@ -281,8 +283,9 @@ orderRouter.put("/order/orderStatus", userAuth,
         returnDocument: "after",
       });
       if (result) {
+        console.log(data);
         //Send message to the user
-        sendOrderConfirmationMessage("+12018927672", "Rishabh", orderId, "December 12, 2024");
+        sendOrderConfirmationMessage(data.userContactNumber, data.userName, orderId, "35 mins");
 
         const updatedData = result; 
         res.json({
