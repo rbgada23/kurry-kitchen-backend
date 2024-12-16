@@ -6,6 +6,7 @@ const { userAuth } = require("../middlewares/auth");
 const Order = require("../models/order");
 const User = require("../models/user");
 const KitchenMenu = require("../models/kitchenMenu");
+const Kitchen = require("../models/kitchen");
 const axios = require("axios");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -239,28 +240,30 @@ orderRouter.get("/order/user/history", userAuth, async (req, res) => {
   try {
     const userId = req.query.userId;
 
-    // Fetch orders for the given kitchenId
-    const orders = await Order.find({ userId: userId, orderStatus: 'accepted' });
+    // Fetch orders for the given userId with accepted orderStatus
+    const orders = await Order.find({ userId: userId, orderStatus: "accepted" });
 
-    // Extract userIds
+    // Extract userIds and kitchenIds
     const userIds = orders.map((order) => new ObjectId(order.userId));
+    const kitchenIds = orders.map((order) => new ObjectId(order.kitchenId));
 
     // Extract menuItemIds only if `items` is an array
     const menuItemIds = orders.flatMap((order) =>
       Array.isArray(order.items)
         ? order.items
-          .filter((item) => item.menuItemId) // Ensure menuItemId exists
-          .map((item) => item.menuItemId)
+            .filter((item) => item.menuItemId) // Ensure menuItemId exists
+            .map((item) => item.menuItemId)
         : [] // Skip for plain text `items`
     );
 
-    // Fetch users and menu items from the database
+    // Fetch users, menu items, and kitchens from the database
     const users = await User.find({ _id: { $in: userIds } });
     const menuItems = menuItemIds.length
       ? await KitchenMenu.find({ _id: { $in: menuItemIds } })
       : [];
+    const kitchens = await Kitchen.find({ _id: { $in: kitchenIds } });
 
-    // Create lookup maps for users and menu items
+    // Create lookup maps for users, menu items, and kitchens
     const userMap = users.reduce((acc, user) => {
       acc[user._id.toString()] = user; // Map userId to user object
       return acc;
@@ -268,6 +271,11 @@ orderRouter.get("/order/user/history", userAuth, async (req, res) => {
 
     const menuMap = menuItems.reduce((acc, menuItem) => {
       acc[menuItem._id.toString()] = menuItem.toObject(); // Map menuItemId to menuItem object
+      return acc;
+    }, {});
+
+    const kitchenMap = kitchens.reduce((acc, kitchen) => {
+      acc[kitchen._id.toString()] = kitchen.name; // Map kitchenId to kitchen name
       return acc;
     }, {});
 
@@ -290,6 +298,7 @@ orderRouter.get("/order/user/history", userAuth, async (req, res) => {
       return {
         ...plainOrder,
         userObj: userMap[order.userId] || null, // Map user object or set to null
+        kitchenName: kitchenMap[order?.kitchenId.toString()] || null, // Map kitchen name or set to null
         items: updatedItems, // Updated items
       };
     });
