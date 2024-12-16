@@ -8,7 +8,7 @@ const KitchenMenu = require("../models/kitchenMenu");
 
 const whatsappRouter = express.Router();
 const ACCESS_TOKEN =
-  "EAARkrOqqAowBO9H4FkQ0MZC4bw2XTPc34MZAIJbX8j1ttAEYFG6ai7MEyAOMZBTqSAJPX3eElYfETFLxnlMA8WEZBRlutevBG67TD3aexJTawAuHJbAbCGSj7lZBfKKafpmKvvrmMMXgIWpREwkZC9KZAXoZBLeDZCOpZCchyi4t6r7tMvMyu5Twyvf0bJMuZB0PbIP8uEiSsZChEirl9qYGbddgTTmZBklX8IVp53MdfsbVAqdcD";
+  "EAARkrOqqAowBOZCtHyyn1vmFMtr1Y7rQkZA4sZBQzoZC8JpolcyL9ZAFzomZCP5cU8t19oKMeHTQDVuCM9ZCm868NLjkoI7DQnEV6wU1ddEwMymRymUb6CZB6JvZCo5cfpJKOg8S386e2Cok003JkvIqxMZCvrlCKjfUVjwkXEHP9Qnmf5uVxM6jZCU0aqFy9MPRZAr3t57EBoENpVI13Ef6dZAKyPQhASZA2Nh3fQ7A2BtTiEYuAZD";
 
 const VERIFY_TOKEN = "akash";
 
@@ -98,10 +98,17 @@ whatsappRouter.post("/webhook", async (req, res) => {
           const customer = await getUserByContactNumber(customerContactNumber);
           const kitchen = await getKitchenByContactNumber(kitchenContactNumber);
           const kitchenMenuList = await getKitchenMenu(kitchen._id);
-          // console.log(customer);
+          const names = kitchenMenuList.map((item) => item.name);
+          const parameters = [];
+          names.forEach((name) => {
+            parameters.push({
+              type: "text",
+              text: name,
+            });
+          });
+          console.log(names);
           // console.log(kitchen);
-          console.log(kitchenMenuList);
-          const str = "A";
+          // console.log(kitchenMenuList);
           //Send menu here once message is recieved - //Check if its a hi/hey/hello and send the order menu
           if (!/\d/.test(message.text.body)) {
             await axios.post(
@@ -111,15 +118,16 @@ whatsappRouter.post("/webhook", async (req, res) => {
                 to: message.from,
                 type: "template",
                 template: {
-                  name: "dynamic_kurry_kitchen",
-                  language: { code: "en_US" },
+                  name: "kurry_kitchen_test_1",
+                  language: { code: "en" },
                   components: [
                     {
-                      type: "body", 
-                      parameters: [
-                        { type: "text", text: "brekafast,lunch,dinner" },
-                        { type: "text", text: "brekafast,lunch,dinner" },
-                        { type: "text", text: "brekafast,lunch,dinner" },
+                      type: "body",
+                      parameters: [ 
+                        { type: "text", text: names[0] ? names[0] : " " },
+                        { type: "text", text: names[1] ? names[1] : " " },
+                        { type: "text", text: names[2] ? names[2] : " " },
+                        { type: "text", text: change?.value?.metadata?.display_phone_number },
                       ],
                     },
                   ],
