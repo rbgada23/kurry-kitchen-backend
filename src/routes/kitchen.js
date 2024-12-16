@@ -212,7 +212,7 @@ kitchenRouter.put("/kitchen/kitchenMenu", userAuth, async (req, res) => {
         $set: data,
       };
       const result = await KitchenMenu.findOneAndUpdate(filter, updateDoc, {
-        returnDocument: "after",
+        returnDocument: "after", 
       });
       if (result) {
         const updatedData = result;

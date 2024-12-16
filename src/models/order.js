@@ -33,15 +33,15 @@ const orderSchema = new Schema({
   orderStatus: {
     type: String,
     enum: ['pending', 'confirmed', 'shipped', 'delivered'],
-    default: 'pending',
+    default: 'pending', 
   },
   platform: {
     type: String,
     enum: ['app', 'WhatsApp'],
-    required: true,
+    required: true,   
   },
   orderDate: {
-    type: Date,
+    type: Date, 
     default: Date.now,
   },
 });
