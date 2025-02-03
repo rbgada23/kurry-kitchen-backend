@@ -8,8 +8,12 @@ const http = require('http');
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:3000", // Allow requests from the client
-    methods: ["GET", "POST"]
+    origin: [
+      "http://localhost:3000", 
+      "https://kurry-kitchen-backend.onrender.com"
+    ], // Allow multiple origins
+    methods: ["GET", "POST"],
+    credentials: true // If using cookies or auth headers
   }
 });
 
