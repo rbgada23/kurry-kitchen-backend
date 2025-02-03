@@ -23,8 +23,8 @@ const io = socketIO(server, {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:3000', // Your frontend URL
-  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+  origin: ["http://localhost:3000", "https://kurrykitchen-1f3cc.web.app"],
+  credentials: true,
 }));
 const authRouter = require("./routes/auth");
 const kitchenRouter = require("./routes/kitchen")
