@@ -10,7 +10,7 @@ const io = socketIO(server, {
   cors: {
     origin: [
       "http://localhost:3000", 
-      "https://kurry-kitchen-backend.onrender.com"
+      "https://kurrykitchen-1f3cc.web.app"
     ], // Allow multiple origins
     methods: ["GET", "POST"],
     credentials: true // If using cookies or auth headers
