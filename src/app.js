@@ -24,7 +24,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
   origin: ["http://localhost:3000", "https://kurrykitchen-1f3cc.web.app"],
-  credentials: true,
+  credentials: true, // Allow cookies
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
 }));
 const authRouter = require("./routes/auth");
 const kitchenRouter = require("./routes/kitchen")
