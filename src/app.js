@@ -23,7 +23,7 @@ const io = socketIO(server, {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: ["http://localhost:3000", "https://kurrykitchen-1f3cc.web.app"],
+  origin: ["http://localhost:3000", "https://kurrykitchen-1f3cc.web.app","https://mealmate-ded01.web.app/"],
   credentials: true, // Allow cookies
   allowedHeaders: ["Content-Type", "Authorization"],
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -32,12 +32,14 @@ const authRouter = require("./routes/auth");
 const kitchenRouter = require("./routes/kitchen")
 const orderRouter = require("./routes/order");
 const whatsappRouter = require("./routes/whatsapp");
+const riderRouter = require("./routes/rider");
 
 const order = require("./models/order");
 app.use("/", authRouter);
 app.use("/", kitchenRouter);
 app.use("/", orderRouter);
 app.use("/",whatsappRouter);
+app.use("/", riderRouter);
 
 // Listen for client connections
 io.on('connection', (socket) => {
