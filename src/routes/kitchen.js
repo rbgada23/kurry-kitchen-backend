@@ -12,7 +12,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 //Post Kitchen
-kitchenRouter.post("/kitchen", userAuth, async (req, res) => {
+kitchenRouter.post("/kitchen", async (req, res) => {
   try {
     //ToDo : Add validations
 
@@ -37,7 +37,7 @@ kitchenRouter.post("/kitchen", userAuth, async (req, res) => {
   }
 });
 
-kitchenRouter.get("/kitchen", userAuth, async (req, res) => {
+kitchenRouter.get("/kitchen", async (req, res) => {
   try {
     const userId = req.query.userId;
     const kitchenObj = await Kitchen.findOne({ user: userId });
@@ -52,7 +52,7 @@ kitchenRouter.get("/kitchen", userAuth, async (req, res) => {
 });
 
 // Get All Kitchens
-kitchenRouter.get("/kitchen/all", userAuth, async (req, res) => {
+kitchenRouter.get("/kitchen/all", async (req, res) => {
   try {
     const kitchens = await Kitchen.find();
 
@@ -66,7 +66,7 @@ kitchenRouter.get("/kitchen/all", userAuth, async (req, res) => {
 });
 
 // Get Kitchen Profile
-kitchenRouter.get("/kitchen/profile", userAuth, async (req, res) => {
+kitchenRouter.get("/kitchen/profile", async (req, res) => {
   try {
     const kitchenId = req.query.kitchenId; // Pass kitchen ID as a query parameter
     const kitchenProfile = await Kitchen.findById(kitchenId).select(
@@ -134,7 +134,7 @@ kitchenRouter.put(
 
 
 // Get the kitchen menu
-kitchenRouter.get("/kitchen/kitchenMenu", userAuth, async (req, res) => {
+kitchenRouter.get("/kitchen/kitchenMenu", async (req, res) => {
   try {
     const kitchen = req.query.kitchen; //kitchen id
     const kitchenMenu = await KitchenMenu.find({ kitchen: kitchen });
@@ -199,7 +199,7 @@ kitchenRouter.post(
 );
 
 //Put operations on kitchen Menu
-kitchenRouter.put("/kitchen/kitchenMenu", userAuth, async (req, res) => {
+kitchenRouter.put("/kitchen/kitchenMenu", async (req, res) => {
   try {
     //ToDo : Add validations
     const kitchenMenuId = req.query.id;
@@ -240,7 +240,7 @@ kitchenRouter.put("/kitchen/kitchenMenu", userAuth, async (req, res) => {
 });
 
 //Post Kitchen Daily Menu
-kitchenRouter.post("/kitchen/kitchenDailyMenu", userAuth, async (req, res) => {
+kitchenRouter.post("/kitchen/kitchenDailyMenu", async (req, res) => {
   try {
     //ToDo : Add validations
 
@@ -266,7 +266,7 @@ kitchenRouter.post("/kitchen/kitchenDailyMenu", userAuth, async (req, res) => {
 });
 
 // Get the daily menu
-kitchenRouter.get("/kitchen/kitchenDailyMenu", userAuth, async (req, res) => {
+kitchenRouter.get("/kitchen/kitchenDailyMenu", async (req, res) => {
   try {
     const kitchenDailyMenu = await KitchenDailyMenu.find({});
 
